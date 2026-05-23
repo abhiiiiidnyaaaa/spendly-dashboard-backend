@@ -14,6 +14,8 @@ import * as bcrypt from 'bcrypt';
 
 import { UserService } from '../../../users/application/services/user.service';
 import { MailService } from '../../../mail/application/services/mail.service';
+import { TwoFactorService } from './two-factor.service';
+import { RazorpayService } from '../../../billing/application/services/razorpay.service';
 import { RegisterDto } from '../../dto/register.dto';
 import { LoginDto } from '../../dto/login.dto';
 import { ForgotPasswordDto } from '../../dto/forgot-password.dto';
@@ -26,16 +28,27 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
+    private readonly twoFactorService: TwoFactorService,
+    private readonly razorpayService: RazorpayService,
   ) {}
 
   async register(dto: RegisterDto) {
     // 1. Delegate user creation to UserService
     const user = await this.userService.create(dto);
 
-    // 2. Send welcome email (fire-and-forget — won't block registration)
+    // 2. Create Razorpay Customer and update user
+    try {
+      const customerId = await this.razorpayService.createCustomer(user.name, user.email);
+      await this.userService.update(user._id.toString(), { razorpayCustomerId: customerId });
+      user.razorpayCustomerId = customerId;
+    } catch (err) {
+      console.error('Warning: Razorpay customer creation failed for new user', err);
+    }
+
+    // 3. Send welcome email (fire-and-forget — won't block registration)
     this.mailService.sendWelcomeEmail(dto.email, dto.name);
 
-    // 3. Automatically generate token upon registration
+    // 4. Automatically generate token upon registration
     const token = this.generateToken(user);
     
     return {
@@ -44,7 +57,7 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto & { twoFactorCode?: string }) {
     // 1. Find user by email (we need the password field here)
     const user = await this.userService.findByEmail(dto.email);
     if (!user) {
@@ -57,12 +70,33 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 3. Generate JWT
+    // 3. Check if 2FA is enabled
+    if (user.isTwoFactorEnabled) {
+      if (!dto.twoFactorCode) {
+        // Tell the frontend that 2FA is required
+        return {
+          requiresTwoFactor: true,
+          message: 'Two-factor authentication code required',
+        };
+      }
+
+      // Validate the TOTP code
+      const isCodeValid = await this.twoFactorService.validateCode(
+        user.twoFactorSecret!,
+        dto.twoFactorCode,
+      );
+      if (!isCodeValid) {
+        throw new UnauthorizedException('Invalid two-factor authentication code');
+      }
+    }
+
+    // 4. Generate JWT
     const token = this.generateToken(user);
 
-    // 4. Return user info (strip password) and token
+    // 5. Return user info (strip password & 2FA secret) and token
     const userObj = user.toObject();
     delete userObj.password;
+    delete userObj.twoFactorSecret;
 
     return {
       user: userObj,

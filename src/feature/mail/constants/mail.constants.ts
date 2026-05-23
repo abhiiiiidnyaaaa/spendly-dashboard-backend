@@ -10,6 +10,7 @@ export const MAIL_SUBJECTS = {
   BUDGET_ALERT: '⚠️ Budget Alert — You\'re Approaching Your Limit',
   SUBSCRIPTION_REMINDER: '🔔 Subscription Renewal Reminder',
   MONTHLY_REPORT: '📊 Your Monthly Financial Summary',
+  GOAL_MILESTONE: '🎉 Goal Milestone Reached!',
 };
 
 export const MAIL_DEFAULTS = {

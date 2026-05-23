@@ -13,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { BaseController } from '../../../common/base/base.controller';
 import { ResponseService } from '../../../common/services/response.service';
@@ -22,6 +22,7 @@ import { BudgetService } from '../application/services/budget.service';
 import { CreateBudgetDto } from '../dto/create-budget.dto';
 import { UpdateBudgetDto } from '../dto/update-budget.dto';
 
+@ApiTags('Budgets')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('budgets')
@@ -60,6 +61,21 @@ export class BudgetController extends BaseController {
       const budgets = await this.budgetService.findByMonthWithSpent(userId, month, year);
       this.responseService.sendResponse(res, HttpStatus.OK, budgets, 'Budgets retrieved successfully');
     }, 'Error occurred while fetching budgets');
+  }
+
+  @Post('generate')
+  async generateAiBudget(
+    @Body('month') month: number,
+    @Body('year') year: number,
+    @Body('totalIncome') totalIncome: number,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    await this.handleRequest(async () => {
+      const userId = (req as any).user.id;
+      const createdBudgets = await this.budgetService.generateAiBudget(userId, month, year, totalIncome);
+      this.responseService.sendResponse(res, HttpStatus.CREATED, createdBudgets, 'AI Budget generated successfully');
+    }, 'Error occurred while generating AI budget');
   }
 
   @Put(':id')

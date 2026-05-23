@@ -22,6 +22,9 @@ export class Income {
 
   @Prop({ default: 'INR', trim: true, uppercase: true })
   currency: string;
+
+  @Prop({ required: false })
+  baseAmount?: number;
 }
 
 export const IncomeSchema = SchemaFactory.createForClass(Income);

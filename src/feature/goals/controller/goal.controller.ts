@@ -7,7 +7,10 @@ import { CreateGoalDto } from '../dto/create-goal.dto';
 import { UpdateGoalDto } from '../dto/update-goal.dto';
 import { AddFundsDto } from '../dto/add-funds.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Goals')
+@ApiBearerAuth()
 @Controller('api/v1/goals')
 @UseGuards(JwtAuthGuard)
 export class GoalController extends BaseController {

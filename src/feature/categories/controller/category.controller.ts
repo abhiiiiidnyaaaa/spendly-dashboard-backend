@@ -20,8 +20,9 @@ import { CategoryService } from '../application/services/category.service';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Categories')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('categories')

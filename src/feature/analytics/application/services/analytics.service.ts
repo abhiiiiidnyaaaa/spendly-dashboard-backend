@@ -24,19 +24,19 @@ export class AnalyticsService {
     const [thisMonthResult, lastMonthResult, totalResult, incomeResult] = await Promise.all([
       this.expenseModel.aggregate([
         { $match: { userId: new Types.ObjectId(userId), date: { $gte: firstDayThisMonth } } },
-        { $group: { _id: null, total: { $sum: '$amount' } } },
+        { $group: { _id: null, total: { $sum: { $ifNull: ['$baseAmount', '$amount'] } } } },
       ]),
       this.expenseModel.aggregate([
         { $match: { userId: new Types.ObjectId(userId), date: { $gte: firstDayLastMonth, $lt: firstDayThisMonth } } },
-        { $group: { _id: null, total: { $sum: '$amount' } } },
+        { $group: { _id: null, total: { $sum: { $ifNull: ['$baseAmount', '$amount'] } } } },
       ]),
       this.expenseModel.aggregate([
         { $match: { userId: new Types.ObjectId(userId) } },
-        { $group: { _id: null, total: { $sum: '$amount' } } },
+        { $group: { _id: null, total: { $sum: { $ifNull: ['$baseAmount', '$amount'] } } } },
       ]),
       this.incomeModel.aggregate([
         { $match: { userId: new Types.ObjectId(userId) } },
-        { $group: { _id: null, total: { $sum: '$amount' } } },
+        { $group: { _id: null, total: { $sum: { $ifNull: ['$baseAmount', '$amount'] } } } },
       ]),
     ]);
 
@@ -58,7 +58,7 @@ export class AnalyticsService {
   async getCategoryBreakdown(userId: string) {
     const breakdown = await this.expenseModel.aggregate([
       { $match: { userId: new Types.ObjectId(userId) } },
-      { $group: { _id: '$category', total: { $sum: '$amount' }, count: { $sum: 1 } } },
+      { $group: { _id: '$category', total: { $sum: { $ifNull: ['$baseAmount', '$amount'] } }, count: { $sum: 1 } } },
       { $sort: { total: -1 } },
     ]);
 
@@ -78,7 +78,7 @@ export class AnalyticsService {
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m', date: '$date' } },
-          total: { $sum: '$amount' },
+          total: { $sum: { $ifNull: ['$baseAmount', '$amount'] } },
         },
       },
       { $sort: { _id: 1 } },

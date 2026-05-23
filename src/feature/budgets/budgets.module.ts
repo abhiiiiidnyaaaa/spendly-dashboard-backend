@@ -8,6 +8,7 @@ import { BudgetValidationHelper } from './helpers/budget-validation.helper';
 import { CreateBudgetUseCase } from './application/use-cases/create-budget.usecase';
 import { UpdateBudgetUseCase } from './application/use-cases/update-budget.usecase';
 import { DeleteBudgetUseCase } from './application/use-cases/delete-budget.usecase';
+import { GenerateAiBudgetUseCase } from './application/use-cases/generate-ai-budget.usecase';
 import { BudgetService } from './application/services/budget.service';
 import { BudgetController } from './controller/budget.controller';
 
@@ -23,6 +24,7 @@ import { BudgetController } from './controller/budget.controller';
     CreateBudgetUseCase,
     UpdateBudgetUseCase,
     DeleteBudgetUseCase,
+    GenerateAiBudgetUseCase,
     BudgetService,
   ],
   exports: [BudgetService],

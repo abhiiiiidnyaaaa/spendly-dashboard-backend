@@ -4,6 +4,7 @@ import { SubscriptionRepository } from '../../repositories/subscription.reposito
 import { ExpenseService } from '../../../expenses/application/services/expense.service';
 import { MailService } from '../../../mail/application/services/mail.service';
 import { UserService } from '../../../users/application/services/user.service';
+import { NotificationService } from '../../../notifications/application/services/notification.service';
 
 @Injectable()
 export class SubscriptionCronService {
@@ -14,10 +15,11 @@ export class SubscriptionCronService {
     private readonly expenseService: ExpenseService,
     private readonly mailService: MailService,
     private readonly userService: UserService,
+    private readonly notificationService: NotificationService,
   ) {}
 
-  // Run every night at midnight (Temporarily set to every minute for testing)
-  @Cron(CronExpression.EVERY_MINUTE)
+  // Run every night at midnight
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async handleDueSubscriptions() {
     this.logger.log('Starting daily check for due subscriptions...');
     
@@ -44,7 +46,10 @@ export class SubscriptionCronService {
         // 3. Update the subscription in DB
         await this.subscriptionRepository.updateNextBillingDate(sub._id.toString(), nextDate);
 
-        // 4. Send Email Notification
+        // 4. Real-time in-app notification
+        this.notificationService.notifySubscriptionRenewal(sub.userId, sub.name, sub.amount, sub.currency);
+
+        // 5. Send Email Notification
         try {
           const user = await this.userService.findById(sub.userId);
           if (user) {
@@ -57,7 +62,7 @@ export class SubscriptionCronService {
               currency: sub.currency,
               billingCycle: sub.frequency,
               renewalDate: nextDate.toLocaleDateString(),
-              daysUntilRenewal: 0, // Sending on the day of renewal
+              daysUntilRenewal: 0,
             });
           }
         } catch (mailError) {

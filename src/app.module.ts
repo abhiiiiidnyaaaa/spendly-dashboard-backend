@@ -17,6 +17,12 @@ import { IncomesModule } from './feature/incomes/incomes.module';
 import { SubscriptionsModule } from './feature/subscriptions/subscriptions.module';
 import { MailModule } from './feature/mail/mail.module';
 import { GoalsModule } from './feature/goals/goals.module';
+import { NotificationsModule } from './feature/notifications/notifications.module';
+import { InsightsModule } from './feature/insights/insights.module';
+import { BillingModule } from './feature/billing/billing.module';
+import { GamificationModule } from './feature/gamification/gamification.module';
+import { AiChatModule } from './feature/ai-chat/ai-chat.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -44,8 +50,10 @@ import { GoalsModule } from './feature/goals/goals.module';
     // 4. CRON Scheduling
     ScheduleModule.forRoot(),
 
-    // 5. Email System (Global — available everywhere)
+    // 5. Global Systems (available everywhere)
+    CommonModule,
     MailModule,
+    NotificationsModule,
 
     // 6. Feature Modules
     AuthModule,
@@ -58,6 +66,10 @@ import { GoalsModule } from './feature/goals/goals.module';
     IncomesModule,
     SubscriptionsModule,
     GoalsModule,
+    InsightsModule,
+    BillingModule,
+    GamificationModule,
+    AiChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

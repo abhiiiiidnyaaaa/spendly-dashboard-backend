@@ -3,13 +3,28 @@ import { IncomeRepository } from '../../repositories/income.repository';
 import { CreateIncomeDto } from '../../dto/create-income.dto';
 import { UpdateIncomeDto } from '../../dto/update-income.dto';
 import { IncomeDocument } from '../../schemas/income.schema';
+import { CurrencyService } from '../../../../common/services/currency.service';
+import { UserService } from '../../../users/application/services/user.service';
 
 @Injectable()
 export class IncomeService {
-  constructor(private readonly incomeRepository: IncomeRepository) {}
+  constructor(
+    private readonly incomeRepository: IncomeRepository,
+    private readonly currencyService: CurrencyService,
+    private readonly userService: UserService,
+  ) {}
 
   async create(userId: string, createIncomeDto: CreateIncomeDto): Promise<IncomeDocument> {
-    return this.incomeRepository.create(userId, createIncomeDto);
+    const user = await this.userService.findById(userId);
+    const baseCurrency = user?.baseCurrency || 'INR';
+    const currency = createIncomeDto.currency?.toUpperCase() || 'INR';
+    const baseAmount = await this.currencyService.convert(createIncomeDto.amount, currency, baseCurrency);
+
+    return this.incomeRepository.create(userId, {
+      ...createIncomeDto,
+      currency,
+      baseAmount,
+    } as any);
   }
 
   async findAll(userId: string): Promise<IncomeDocument[]> {

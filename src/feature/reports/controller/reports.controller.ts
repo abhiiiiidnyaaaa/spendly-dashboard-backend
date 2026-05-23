@@ -1,12 +1,13 @@
 import { Controller, Get, HttpStatus, Query, Req, Res, UseGuards } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { BaseController } from '../../../common/base/base.controller';
 import { ResponseService } from '../../../common/services/response.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { ReportsService } from '../application/services/reports.service';
 
+@ApiTags('Reports')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('reports')

@@ -1,13 +1,25 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { GoalRepository } from '../../repositories/goal.repository';
 import { CreateGoalDto } from '../../dto/create-goal.dto';
 import { UpdateGoalDto } from '../../dto/update-goal.dto';
 import { AddFundsDto } from '../../dto/add-funds.dto';
 import { GoalDocument, GoalStatus } from '../../schemas/goal.schema';
+import { MailService } from '../../../../feature/mail/application/services/mail.service';
+import { UserService } from '../../../../feature/users/application/services/user.service';
+import { NotificationService } from '../../../../feature/notifications/application/services/notification.service';
+import { GamificationService } from '../../../../feature/gamification/application/services/gamification/gamification.service';
 
 @Injectable()
 export class GoalService {
-  constructor(private readonly repository: GoalRepository) {}
+  private readonly logger = new Logger(GoalService.name);
+
+  constructor(
+    private readonly repository: GoalRepository,
+    private readonly mailService: MailService,
+    private readonly userService: UserService,
+    private readonly notificationService: NotificationService,
+    private readonly gamificationService: GamificationService,
+  ) {}
 
   async create(userId: string, dto: CreateGoalDto): Promise<GoalDocument> {
     // Determine status automatically if they initialized it with enough funds
@@ -49,12 +61,12 @@ export class GoalService {
       throw new BadRequestException('This goal is already achieved!');
     }
 
+    const oldAmount = goal.currentAmount;
     const newAmount = goal.currentAmount + dto.amount;
     let status: GoalStatus = goal.status as GoalStatus;
 
     if (newAmount >= goal.targetAmount) {
       status = GoalStatus.ACHIEVED;
-      // Note: We could dispatch a congratulations email here via MailService!
     }
 
     const updated = await this.repository.update(userId, goalId, {
@@ -63,6 +75,44 @@ export class GoalService {
     } as any);
 
     if (!updated) throw new NotFoundException('Goal not found');
+
+    // Milestone Check: 50% or 100%
+    try {
+      const oldPercent = (oldAmount / goal.targetAmount) * 100;
+      const newPercent = (newAmount / goal.targetAmount) * 100;
+
+      // Send if they just crossed 50% (but weren't already at or above 50%)
+      const crossed50 = oldPercent < 50 && newPercent >= 50 && newPercent < 100;
+      // Send if they just hit 100%
+      const hit100 = newPercent >= 100;
+
+      if (crossed50 || hit100) {
+        // Real-time in-app notification
+        this.notificationService.notifyGoalMilestone(userId, goal.name, newPercent);
+
+        if (hit100) {
+          // Gamification Check
+          await this.gamificationService.checkGoalAchievedBadge(userId);
+        }
+
+        // Email notification
+        const user = await this.userService.findById(userId);
+        if (user) {
+          this.mailService.sendGoalMilestoneEmail({
+            to: user.email,
+            name: user.name,
+            goalName: goal.name,
+            targetAmount: goal.targetAmount,
+            currentAmount: newAmount,
+            percentAchieved: newPercent,
+            currency: goal.currency,
+          });
+        }
+      }
+    } catch (err) {
+      this.logger.error(`Failed to send milestone notification for goal ${goalId}`, err);
+    }
+
     return updated;
   }
 

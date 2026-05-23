@@ -33,6 +33,35 @@ export class User {
 
   @Prop()
   resetPasswordExpires?: Date;
+
+  @Prop({ default: false })
+  isTwoFactorEnabled: boolean;
+
+  @Prop()
+  twoFactorSecret?: string;
+
+  // ========== Billing / Razorpay ==========
+  @Prop({ default: 'FREE', enum: ['FREE', 'PRO'] })
+  planTier: string;
+
+  @Prop()
+  razorpayCustomerId?: string;
+
+  @Prop()
+  razorpaySubscriptionId?: string;
+
+  @Prop()
+  razorpaySubscriptionStatus?: string;
+
+  // ========== Gamification ==========
+  @Prop({ type: [String], default: [] })
+  badges: string[]; // e.g., 'FIRST_EXPENSE', 'BUDGET_MASTER', 'GOAL_CRUSHER'
+
+  @Prop({ default: 0 })
+  currentStreak: number; // Days in a row logging an expense
+
+  @Prop()
+  lastLoginDate?: Date; // To help calculate streaks
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -12,4 +12,20 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   avatar?: string;
+
+  @IsString()
+  @IsOptional()
+  razorpayCustomerId?: string;
+
+  @IsString()
+  @IsOptional()
+  razorpaySubscriptionId?: string;
+
+  @IsString()
+  @IsOptional()
+  razorpaySubscriptionStatus?: string;
+
+  @IsString()
+  @IsOptional()
+  planTier?: string;
 }

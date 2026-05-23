@@ -6,6 +6,7 @@ import { BudgetRepository } from '../../repositories/budget.repository';
 import { CreateBudgetUseCase } from '../use-cases/create-budget.usecase';
 import { UpdateBudgetUseCase } from '../use-cases/update-budget.usecase';
 import { DeleteBudgetUseCase } from '../use-cases/delete-budget.usecase';
+import { GenerateAiBudgetUseCase } from '../use-cases/generate-ai-budget.usecase';
 
 @Injectable()
 export class BudgetService {
@@ -13,6 +14,7 @@ export class BudgetService {
     private readonly createUseCase: CreateBudgetUseCase,
     private readonly updateUseCase: UpdateBudgetUseCase,
     private readonly deleteUseCase: DeleteBudgetUseCase,
+    private readonly generateAiBudgetUseCase: GenerateAiBudgetUseCase,
     private readonly repository: BudgetRepository,
   ) {}
 
@@ -33,5 +35,9 @@ export class BudgetService {
 
   async delete(budgetId: string, userId: string): Promise<boolean> {
     return this.deleteUseCase.execute(budgetId, userId);
+  }
+
+  async generateAiBudget(userId: string, month: number, year: number, totalIncome?: number) {
+    return this.generateAiBudgetUseCase.execute(userId, month, year, totalIncome);
   }
 }

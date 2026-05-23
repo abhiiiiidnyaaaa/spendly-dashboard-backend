@@ -1,17 +1,13 @@
-/**
- * AuthModule
- *
- * Configures JWT and ties together the auth layer.
- */
-
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
 import { UsersModule } from '../users/users.module';
+import { BillingModule } from '../billing/billing.module';
 import { ResponseService } from '../../common/services/response.service';
 import { AuthService } from './application/services/auth.service';
+import { TwoFactorService } from './application/services/two-factor.service';
 import { AuthController } from './controller/auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
@@ -19,6 +15,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   imports: [
     // Import UsersModule to use UserService
     UsersModule,
+    BillingModule,
     PassportModule,
     // Async JWT configuration using ConfigService
     JwtModule.registerAsync({
@@ -36,6 +33,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   providers: [
     ResponseService,
     AuthService,
+    TwoFactorService,
     JwtStrategy,
   ],
   exports: [AuthService], // Exported in case other modules need it

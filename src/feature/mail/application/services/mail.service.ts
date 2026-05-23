@@ -158,4 +158,46 @@ export class MailService {
       this.logger.error(`Failed to send subscription reminder to ${payload.to}`, error.stack);
     }
   }
+
+  /**
+   * Send Goal Milestone Alert (50% or 100%)
+   */
+  async sendGoalMilestoneEmail(payload: {
+    to: string;
+    name: string;
+    goalName: string;
+    targetAmount: number;
+    currentAmount: number;
+    percentAchieved: number;
+    currency: string;
+  }): Promise<void> {
+    try {
+      const isComplete = payload.percentAchieved >= 100;
+      const milestoneTitle = isComplete ? 'Goal Conquered!' : 'Halfway There!';
+      const milestoneMessage = isComplete 
+        ? "Incredible job! You've successfully reached your target amount. It's time to celebrate!"
+        : "You are officially halfway to your goal. Keep up the fantastic saving habits!";
+
+      await this.mailerService.sendMail({
+        to: payload.to,
+        subject: `${MAIL_SUBJECTS.GOAL_MILESTONE} — ${payload.goalName}`,
+        template: 'goal-milestone',
+        context: {
+          name: payload.name,
+          goalName: payload.goalName,
+          targetAmount: payload.targetAmount.toLocaleString(),
+          currentAmount: payload.currentAmount.toLocaleString(),
+          percentAchieved: Math.round(payload.percentAchieved),
+          currency: payload.currency,
+          milestoneTitle,
+          milestoneMessage,
+          dashboardUrl: this.dashboardUrl,
+          year: new Date().getFullYear(),
+        },
+      });
+      this.logger.log(`Goal milestone email sent to ${payload.to} for: ${payload.goalName}`);
+    } catch (error) {
+      this.logger.error(`Failed to send goal milestone email to ${payload.to}`, error.stack);
+    }
+  }
 }

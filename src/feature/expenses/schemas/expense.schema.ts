@@ -22,6 +22,15 @@ export class Expense {
 
   @Prop({ default: 'INR', trim: true, uppercase: true })
   currency: string;
+
+  @Prop({ required: false })
+  baseAmount?: number;
+
+  @Prop({ required: false })
+  receiptUrl?: string;
+
+  @Prop({ required: false })
+  receiptText?: string;
 }
 
 export const ExpenseSchema = SchemaFactory.createForClass(Expense);

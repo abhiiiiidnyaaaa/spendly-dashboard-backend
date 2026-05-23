@@ -6,8 +6,9 @@ import { ResponseService } from '../../../common/services/response.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AnalyticsService } from '../application/services/analytics.service';
 
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Analytics')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('analytics')

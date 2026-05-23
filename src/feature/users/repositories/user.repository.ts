@@ -49,6 +49,10 @@ export class UserRepository {
     }).exec();
   }
 
+  async findByRazorpayCustomerId(customerId: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ razorpayCustomerId: customerId }).exec();
+  }
+
   // ========== Update ==========
 
   async update(

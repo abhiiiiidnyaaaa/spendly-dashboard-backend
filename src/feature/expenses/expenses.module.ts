@@ -10,17 +10,23 @@ import { FindAllExpensesUseCase } from './application/use-cases/find-all-expense
 import { FindExpenseUseCase } from './application/use-cases/find-expense.usecase';
 import { UpdateExpenseUseCase } from './application/use-cases/update-expense.usecase';
 import { DeleteExpenseUseCase } from './application/use-cases/delete-expense.usecase';
+import { UploadReceiptUseCase } from './application/use-cases/upload-receipt.usecase';
+import { ExportExpensesUseCase } from './application/use-cases/export-expenses.usecase';
+import { ImportExpensesUseCase } from './application/use-cases/import-expenses.usecase';
+import { AnalyzeReceiptUseCase } from './application/use-cases/analyze-receipt.usecase';
 import { ExpenseService } from './application/services/expense.service';
 import { ExpenseController } from './controller/expense.controller';
 
 import { UsersModule } from '../users/users.module';
 import { BudgetsModule } from '../budgets/budgets.module';
+import { GamificationModule } from '../gamification/gamification.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Expense.name, schema: ExpenseSchema }]),
     UsersModule,
     BudgetsModule,
+    GamificationModule,
   ],
   controllers: [ExpenseController],
   providers: [
@@ -32,6 +38,10 @@ import { BudgetsModule } from '../budgets/budgets.module';
     FindExpenseUseCase,
     UpdateExpenseUseCase,
     DeleteExpenseUseCase,
+    UploadReceiptUseCase,
+    ExportExpensesUseCase,
+    ImportExpensesUseCase,
+    AnalyzeReceiptUseCase,
     ExpenseService,
   ],
   exports: [ExpenseService], // Might be useful if we want aggregate reports later
